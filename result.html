@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis Results | SkillScan360</title>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/github-calendar@latest/dist/github-calendar.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/github-calendar@latest/dist/github-calendar-responsive.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: #f4f4f4;
+      color: #222;
+    }
+    header {
+      background: linear-gradient(90deg, #6b46c1, #b83280);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    canvas {
+      margin-top: 2rem;
+      max-width: 100%;
+    }
+    table {
+      width: 100%;
+      margin-top: 2rem;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .ai-summary {
+      background: #f9f9f9;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+    .calendar {
+      margin: 2rem 0;
+    }
+    .btn-download {
+      background-color: #4caf50;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 2rem;
+    }
+    footer {
+      background: #111;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="font-weight:bold; font-size:1.2rem;">SkillScan360</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <div class="container" id="results">
+    <h2>Profile Analysis</h2>
+    <div id="calendar" class="calendar">Loading GitHub calendar...</div>
+    <div id="profileInfo"></div>
+    <canvas id="ghChart"></canvas>
+
+    <div class="ai-summary">
+      <h3>AI Suggestions</h3>
+      <ul id="aiTips"></ul>
+    </div>
+
+    <canvas id="languagePie"></canvas>
+    <div id="repoTable"></div>
+
+    <button class="btn-download" onclick="exportToPDF()">Download PDF</button>
+  </div>
+
+  <footer>
+    &copy; 2025 SkillScan360. All rights reserved.
+  </footer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get("type");
+    const user = params.get("user");
+
+    if (type === "github" && user) {
+      GitHubCalendar("#calendar", user);
+
+      fetch(`https://api.github.com/users/${user}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('profileInfo').innerHTML = `
+            <div style="text-align:center">
+              <img src="${data.avatar_url}" width="100" style="border-radius:50%; margin:1rem auto;">
+              <h3>${data.name || data.login}</h3>
+              <p>${data.bio || ''}</p>
+              <p><strong>Repos:</strong> ${data.public_repos}, 
+              <strong>Followers:</strong> ${data.followers}, 
+              <strong>Following:</strong> ${data.following}</p>
+            </div>`;
+
+          const tips = [];
+          if (data.public_repos < 10) tips.push("Contribute to more repositories.");
+          if (data.followers < 50) tips.push("Engage more to grow your followers.");
+          if (!data.bio || data.bio.length < 15) tips.push("Write a detailed bio.");
+          if (data.following > data.followers) tips.push("Balance following/followers ratio.");
+          if (tips.length === 0) tips.push("Your GitHub profile looks great!");
+          document.getElementById("aiTips").innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+
+          new Chart(document.getElementById("ghChart"), {
+            type: "bar",
+            data: {
+              labels: ["Repos", "Followers", "Following"],
+              datasets: [{
+                label: "GitHub Stats",
+                backgroundColor: ["#6b46c1", "#b83280", "#4299e1"],
+                data: [data.public_repos, data.followers, data.following]
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+
+          fetch(`https://api.github.com/users/${user}/repos`)
+            .then(res => res.json())
+            .then(repos => {
+              document.getElementById("repoTable").innerHTML = `
+                <h3>Repositories</h3>
+                <table><tr><th>Name</th><th>Language</th><th>Stars</th></tr>
+                ${repos.map(r => `
+                  <tr>
+                    <td>${r.name}</td>
+                    <td>${r.language || 'N/A'}</td>
+                    <td>${r.stargazers_count}</td>
+                  </tr>`).join('')}
+                </table>`;
+
+              const langStats = {};
+              const langFetches = repos.map(r => fetch(r.languages_url).then(res => res.json()));
+              Promise.all(langFetches).then(langDataArr => {
+                langDataArr.forEach(langData => {
+                  for (let lang in langData) {
+                    langStats[lang] = (langStats[lang] || 0) + langData[lang];
+                  }
+                });
+                new Chart(document.getElementById("languagePie"), {
+                  type: "pie",
+                  data: {
+                    labels: Object.keys(langStats),
+                    datasets: [{
+                      data: Object.values(langStats),
+                      backgroundColor: Object.keys(langStats).map((_, i) => `hsl(${i * 40}, 70%, 60%)`)
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      legend: { position: 'bottom' }
+                    }
+                  }
+                });
+              });
+            });
+        });
+    }
+
+    async function exportToPDF() {
+      const element = document.getElementById("results");
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = { width: canvas.width, height: canvas.height };
+      const ratio = pageWidth / imgProps.width;
+      const imgHeight = imgProps.height * ratio;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('SkillScan360_Profile.pdf');
+    }
+  </script>
+</body>
+</html>

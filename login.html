@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | SkillScan360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #6b46c1, #b83280);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header .logo {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    header nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1rem;
+      font-weight: 500;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .login-box {
+      background: #fff;
+      color: #333;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 1rem;
+      color: #6b46c1;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .login-box button.login-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      background: #6b46c1;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .login-box .divider {
+      margin: 1rem 0;
+      color: #aaa;
+    }
+
+    .oauth-buttons a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eee;
+      color: #333;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      padding: 0.6rem;
+      font-weight: 500;
+    }
+
+    .oauth-buttons img {
+      height: 20px;
+      width: 20px;
+      margin-right: 0.5rem;
+    }
+
+    .login-box p {
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .login-box a {
+      color: #6b46c1;
+      text-decoration: none;
+    }
+
+    footer {
+      background: #111;
+      color: #ccc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">SkillScan360</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="login-box">
+      <h2>Login</h2>
+      <form>
+        <input type="email" placeholder="Email" required />
+        <input type="password" placeholder="Password" required />
+        <button type="submit" class="login-btn">Login</button>
+      </form>
+
+      <div class="divider">or continue with</div>
+
+      <div class="oauth-buttons">
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" /> Login with Google</a>
+        <a href="#"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" /> Login with GitHub</a>
+      </div>
+
+      <p>Don't have an account? <a href="index.html">Go back to Home</a></p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 SkillScan360. All rights reserved.
+  </footer>
+</body>
+</html>
